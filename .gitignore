@@ -1,0 +1,52 @@
+# Ignorar o ambiente virtual
+.venv/
+
+# Ignorar arquivos do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignorar arquivos de logs
+*.log
+
+# Ignorar arquivos temporários do sistema
+.DS_Store
+Thumbs.db
+
+# Ignorar configurações do editor/IDE
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Ignorar pacotes criados (caso use setup.py)
+dist/
+build/
+*.egg-info/
+
+# Arquivos de banco de dados locais (se aplicável)
+*.sqlite3
+
+# Arquivos de testes e cobertura
+htmlcov/
+.tox/
+.nox/
+.coverage
+coverage.xml
+.cache
+pytest_cache/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Configurações de ambientes
+.env
+.env.*
+
+# Arquivos de dependências específicas (opcional)
+pip-log.txt
+
+# Arquivos de lock (opcional, dependendo do gerenciador)
+poetry.lock
+Pipfile.lock
+
