@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Query, Path, status
 from typing import List, Optional
 from uuid import uuid4
 from datetime import datetime
+from app.schemas.schemas import Message, ProjectSchema, ProjectPublic, ProjectDB
 
 from pydantic import BaseModel
 
@@ -21,54 +22,61 @@ app = FastAPI(
 )
 
 # Simulação de banco de dados em memória
-tasks_db = {}
+# tasks_db = {}
+projects_bd = []
 
-@app.get("/tasks", response_model=List[Task], status_code=status.HTTP_200_OK)
-def list_tasks(skip: int = Query(0, ge=0), limit: int = Query(10, gt=0)):
-    """
-    Lista tarefas com paginação via query string.
-    """
-    tasks = list(tasks_db.values())
-    return tasks[skip: skip + limit]
+# Criação do andPoint da home
 
-@app.get("/tasks/{task_id}", response_model=Task, status_code=status.HTTP_200_OK)
-def get_task(task_id: str = Path(...)):
-    """
-    Busca uma tarefa pelo ID via parâmetro de URL.
-    """
-    task = tasks_db.get(task_id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Tarefa não encontrada")
-    return task
+@app.get("/", response_model=Message, status_code=status.HTTP_200_OK)
+def read_root():
+    return {'message': 'Olá mundo!'}
 
-@app.post("/tasks", response_model=Task, status_code=status.HTTP_201_CREATED)
-def create_task(task: TaskCreate):
-    """
-    Cria uma nova tarefa via corpo da requisição.
-    """
-    task_id = str(uuid4())
-    new_task = Task(id=task_id, created_at=datetime.utcnow(), **task.dict())
-    tasks_db[task_id] = new_task
-    return new_task
+# Criação de um novo projeto
+@app.post("/projects", response_model=ProjectPublic , status_code=status.HTTP_201_CREATED) 
+def create_project(project: ProjectSchema):
+    
+    project_with_id = ProjectDB(
+        id = len(projects_bd) +1,
+        **project.model_dump()
+    )
+    projects_bd.append(project_with_id)
+    return project_with_id
 
-@app.put("/tasks/{task_id}", response_model=Task, status_code=status.HTTP_200_OK)
-def update_task(task_id: str, task: TaskCreate):
-    """
-    Atualiza uma tarefa existente.
-    """
-    stored_task = tasks_db.get(task_id)
-    if not stored_task:
-        raise HTTPException(status_code=404, detail="Tarefa não encontrada")
-    updated_task = Task(id=task_id, created_at=stored_task.created_at, **task.dict())
-    tasks_db[task_id] = updated_task
-    return updated_task
+# Listar todos os projetos por paginação
+@app.get("/projects", response_model=ProjectDB, status_code=status.HTTP_200_OK)
+def read_projects(skip: int = Query(0, ge=0), limit: int = Query(10, gt=0)):
+    projects = List(projects_bd.values())
+    return projects[skip: skip + limit]
+    
+# @app.get("/projects", status_code=status.HTTP_200_OK)
+# def read_projects():
+#     return {'projects': projects_bd}
 
-@app.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_task(task_id: str):
-    """
-    Remove uma tarefa.
-    """
-    if task_id in tasks_db:
-        del tasks_db[task_id]
+# Atualizar um projeto existente
+@app.put("/projects/{project_id}",response_model=ProjectPublic, status_code=status.HTTP_200_OK)
+# Vai atualizar os dados que foram recebidos originalmente
+def update_project(project_id: int, project: ProjectSchema):
+    project_with_id = ProjectDB(        
+        **project.model_dump(),
+        id = project_id)
+    projects_bd[project_id - 1] = project_with_id
+    
+    return project_with_id 
+
+# Busca um projeto especifico  pelo id 
+@app.get("/projects/{project_id}", response_model=ProjectDB, status_code=status.HTTP_200_OK)
+def get_project(project_id: str = Path(...)):
+    project = projects_bd.get(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Projeto não foi encontrado")
+    return project
+
+# Deletar um projeto
+
+@app.delete("/projects/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_project(project_id: str):
+    if project_id in projects_bd:
+        del project_id[project_id]
     else:
-        raise HTTPException(status_code=404, detail="Tarefa não encontrada")
+        raise HTTPException(status_code=404, detail="Projeto não foi encontrado")
+    
