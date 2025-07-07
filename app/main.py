@@ -4,20 +4,9 @@ from uuid import uuid4
 from datetime import datetime
 from app.schemas.schemas import Message, ProjectSchema, ProjectPublic, ProjectDB
 
-from pydantic import BaseModel
-
-class TaskCreate(BaseModel):
-    title: str
-    description: Optional[str] = None
-    completed: bool = False
-
-class Task(TaskCreate):
-    id: str
-    created_at: datetime
-
 app = FastAPI(
-    title="API de Tarefas",
-    description="API para gestão de tarefas a fazer",
+    title="API de projetos",
+    description="API para gestão de mini projetos",
     version="0.1.0"
 )
 
@@ -29,7 +18,7 @@ projects_bd = []
 
 @app.get("/", response_model=Message, status_code=status.HTTP_200_OK)
 def read_root():
-    return {'message': 'Olá mundo!'}
+    return {'message': 'Bem vindo à API!'}
 
 # Criação de um novo projeto
 @app.post("/projects", response_model=ProjectPublic , status_code=status.HTTP_201_CREATED) 
@@ -72,7 +61,6 @@ def get_project(project_id: str = Path(...)):
     return project
 
 # Deletar um projeto
-
 @app.delete("/projects/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_project(project_id: str):
     if project_id in projects_bd:
